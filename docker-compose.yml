@@ -1,0 +1,46 @@
+version: '3.4'
+
+services:
+
+  # redis:
+    # container_name: redis-nginxtest
+    # image: redis
+    # environment:
+      # # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      # - ALLOW_EMPTY_PASSWORD=yes
+      # - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    # ports:
+      # - '6380:6379'
+    # volumes:
+      # - 'redis_data:/bitnami/redis/data'
+
+  blazorapp:
+    image: ${DOCKER_REGISTRY-}blazorappnginx
+    build:
+      context: .
+      dockerfile: BlazorAppNginx/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - SignalR__BaseUrl=http://localhost
+      - Redis__ConnectionString=redis:6380
+    ports:
+      - "80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+    # depends_on:
+      # - redis
+
+  bapp-nginx:
+    container_name: nginx-bapp-test
+    image: nginxplus
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - blazorapp
+    ports:
+      - "4002:80"
+
+# volumes:
+  # redis_data:

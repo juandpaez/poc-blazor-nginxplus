@@ -1,0 +1,22 @@
+﻿<br />
+<h3>HostInfo</h3>
+
+<div style="background-color:beige; border: 1px solid #ccc;">
+    <div>
+        <b class="ml-2">Host name:</b><span>@System.Net.Dns.GetHostName()</span>
+    </div>
+    <div>
+        <b class="ml-2">Host ip:</b><span>
+            @(string.Join(';',System.Net.Dns.GetHostAddresses(System.Net.Dns.GetHostName()).Select(x => x.ToString())))
+        </span>
+    </div>
+    <div>
+        <b class="ml-2">Date:</b><span>@System.DateTime.UtcNow</span>
+    </div>
+</div>
+
+<br />
+
+@code {
+
+}

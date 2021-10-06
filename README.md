@@ -1,0 +1,1 @@
+docker-compose up --build --scale blazorapp=3
