@@ -1,6 +1,7 @@
 using BlazorAppNginx.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
@@ -27,8 +28,12 @@ namespace BlazorAppNginx
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddRazorPages();
+			services.AddSingleton<CircuitHandler, AppCircuitHandler>();
+			services.AddSingleton(sp => sp.GetRequiredService<CircuitHandler>() as ICircuitCounter);
 			services.AddServerSideBlazor();
-			services.AddSingleton<WeatherForecastService>();
+			services.AddScoped<WeatherForecastService>();
+			services.AddScoped<UserSessionState>();
+			services.AddSingleton<ServerState>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,7 +57,10 @@ namespace BlazorAppNginx
 
 			app.UseEndpoints(endpoints =>
 			{
-				endpoints.MapBlazorHub();
+				endpoints.MapBlazorHub(options =>
+				{
+					options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
+				});
 				endpoints.MapFallbackToPage("/_Host");
 			});
 		}

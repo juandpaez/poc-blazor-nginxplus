@@ -5,6 +5,12 @@
     Layout = null;
 }
 
+@using Microsoft.Net.Http.Headers;
+@if (!HttpContext.Response.HasStarted)
+{
+    HttpContext.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, no-transform, max-age=0";
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +23,7 @@
     <link href="BlazorAppNginx.styles.css" rel="stylesheet" />
 </head>
 <body>
-    <component type="typeof(App)" render-mode="ServerPrerendered" />
+    <component type="typeof(App)" render-mode="Server" />
 
     <div id="blazor-error-ui">
         <environment include="Staging,Production">
@@ -30,6 +36,69 @@
         <a class="dismiss">🗙</a>
     </div>
 
-    <script src="_framework/blazor.server.js"></script>
+    <script src="_framework/blazor.server.js" autostart="false"></script>
+    <script>
+
+        function addCookie() {
+            console.log('Adding cookie');
+            var cookieValue = document.getElementById('cookie-value');
+            if (cookieValue.value) {
+                const d = new Date();
+                d.setTime(d.getTime() + (30 * 24 * 60 * 60 * 1000));
+                let expires = "expires=" + d.toUTCString();
+                document.cookie = cookieValue.value + ";" + expires + ";path=/";
+            }
+        }
+
+        function removeAllCookiesAndLocalStorage() {
+            console.log('Removing cookies');
+            var cookies = document.cookie.split("; ");
+            for (var c = 0; c < cookies.length; c++) {
+                var d = window.location.hostname.split(".");
+                while (d.length > 0) {
+                    var cookieBase = encodeURIComponent(cookies[c].split(";")[0].split("=")[0]) + '=; expires=Thu, 01-Jan-1970 00:00:01 GMT; domain=' + d.join('.') + ' ;path=';
+                    var p = location.pathname.split('/');
+                    document.cookie = cookieBase + '/';
+                    while (p.length > 0) {
+                        document.cookie = cookieBase + p.join('/');
+                        p.pop();
+                    };
+                    d.shift();
+                }
+            }
+
+            window.localStorage.clear();
+        };
+
+        function blazorStart() {
+            Blazor.start({
+                configureSignalR: function (builder) {
+                    builder.withUrl("/_blazor", {
+                        skipNegotiation: true,
+                        transport: 1
+                    });
+                }
+            });
+        }
+
+        function disconnectSignalR() {
+            console.log('Disconnecting SignalR');
+            Blazor.disconnect();
+        }
+
+        function reconnectSignalR() {
+            console.log('Connecting SignalR');
+            Blazor.reconnect();
+        }
+
+        function interruptSignalR() {
+            console.log('Interrupt SignalR');
+            Blazor._internal.forceCloseConnection();
+        }
+
+        // Starts the signal R connection with custom settings using web sockets as transport
+        blazorStart();
+
+    </script>
 </body>
 </html>

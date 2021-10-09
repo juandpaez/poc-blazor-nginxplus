@@ -1,22 +1,101 @@
-﻿<br />
-<h3>HostInfo</h3>
+﻿@using BlazorAppNginx.Data;
 
-<div style="background-color:beige; border: 1px solid #ccc;">
-    <div>
-        <b class="ml-2">Host name:</b><span>@System.Net.Dns.GetHostName()</span>
+@implements IDisposable
+
+<div class="my-4">
+    <h3>HostInfo</h3>
+    <div style="background-color:aliceblue; border: 1px solid #ccc;" class="mt-2">
+        <div>
+            <b class="ml-2">INITIAL Host name:</b>
+            <span>@userSessionState.InitialHost.Name</span> 
+            <b class="ml-4">Date:</b>
+            <span>@userSessionState.InitialHostAssignedDate</span>
+        </div>
+        <div>
+            <div class="ml-2 d-inline-block font-weight-bold">Host ip:</div>
+            <div class="mx-2 d-inline-block" style="max-height: 4rem; overflow:auto; vertical-align:top;">
+                @foreach (var ip in userSessionState.InitialHost.IPs)
+                {
+                    <div>
+                        @ip
+                    </div>
+                }
+            </div>
+        </div>
     </div>
-    <div>
-        <b class="ml-2">Host ip:</b><span>
-            @(string.Join(';',System.Net.Dns.GetHostAddresses(System.Net.Dns.GetHostName()).Select(x => x.ToString())))
-        </span>
-    </div>
-    <div>
-        <b class="ml-2">Date:</b><span>@System.DateTime.UtcNow</span>
+    <div style="background-color:beige; border: 1px solid #ccc;" class="mt-2">
+        <div>
+            @{
+                var currentHostData = GetHostData();
+                <div>
+                    <b class="ml-2">CURRENT Host name:</b>
+                    <span>@currentHostData.Name</span>
+                </div>
+                <div>
+                    <div class="ml-2 d-inline-block font-weight-bold">Host ip:</div>
+                    <div class="mx-2 d-inline-block" style="max-height: 4rem; overflow:auto; vertical-align:top;">
+                        @foreach (var ip in currentHostData.IPs)
+                        {
+                            <div>
+                                @ip
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="mt-2">
+            <b class="ml-2">Server total connections:</b>
+            <span>@serverState.ConnectionsCount</span>
+        </div>
+        <div class="mt-2">
+            <b class="ml-2">Date:</b>
+            <span>@System.DateTime.UtcNow</span>
+        </div>
+        <div class="mt-2">
+            <b class="ml-2">Local counter:</b>
+            <span>@userSessionState.Counter</span>
+        </div>
     </div>
 </div>
-
-<br />
+<hr />
+<ButtonsSection></ButtonsSection>
 
 @code {
 
+    [Inject]
+    UserSessionState userSessionState { get; set; }
+
+    [Inject]
+    ServerState serverState { get; set; }
+
+    private System.Timers.Timer timer;
+
+    protected override void OnInitialized()
+    {
+        userSessionState.SetInitialHost(GetHostData());
+
+        timer = new System.Timers.Timer(1000);
+        timer.Elapsed += async delegate { await ElapsedTimeChanged(); };
+        timer.Enabled = true;
+        timer.Start();
+    }
+
+    async Task ElapsedTimeChanged()
+    {
+        userSessionState.IncrementCount();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    HostData GetHostData()
+    {
+        var ips = System.Net.Dns.GetHostAddresses(System.Net.Dns.GetHostName()).Select(x => x.ToString());
+        var hostname = @System.Net.Dns.GetHostName();
+        return new HostData(hostname, ips);
+    }
+
+    public void Dispose()
+    {
+        timer.Dispose();
+    }
 }

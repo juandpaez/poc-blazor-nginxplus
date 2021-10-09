@@ -2,18 +2,6 @@ version: '3.4'
 
 services:
 
-  # redis:
-    # container_name: redis-nginxtest
-    # image: redis
-    # environment:
-      # # ALLOW_EMPTY_PASSWORD is recommended only for development.
-      # - ALLOW_EMPTY_PASSWORD=yes
-      # - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
-    # ports:
-      # - '6380:6379'
-    # volumes:
-      # - 'redis_data:/bitnami/redis/data'
-
   blazorapp:
     image: ${DOCKER_REGISTRY-}blazorappnginx
     build:
@@ -29,8 +17,7 @@ services:
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
-    # depends_on:
-      # - redis
+      - protected_keys:/root/.aspnet/DataProtection-Keys
 
   bapp-nginx:
     container_name: nginx-bapp-test
@@ -42,5 +29,7 @@ services:
     ports:
       - "4002:80"
 
-# volumes:
-  # redis_data:
+volumes:
+  # Storing keys here is just for the PoC not recommended for PROD. 
+  # see: https://docs.microsoft.com/en-us/aspnet/core/security/data-protection/configuration/overview?view=aspnetcore-5.0
+  protected_keys:
