@@ -50,6 +50,12 @@
             }
         }
 
+        function addCookieAndRefresh() {
+            addCookie();
+            console.log('reloading browser');
+            location.reload();
+        }
+
         function removeAllCookiesAndLocalStorage() {
             console.log('Removing cookies');
             var cookies = document.cookie.split("; ");
@@ -68,6 +74,7 @@
             }
 
             window.localStorage.clear();
+            location.reload();
         };
 
         function blazorStart() {

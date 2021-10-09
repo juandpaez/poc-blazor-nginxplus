@@ -5,8 +5,9 @@
     <div>
         <div class="font-weight-bold">Cookies</div>
         <input id="cookie-value" value="target_pod_id=blazor-test" placeholder="target_pod_id=blazor-test" />
-        <button class="btn btn-sm btn-primary" onclick="addCookie();">Add cookie</button>
-        <button class="btn btn-sm btn-danger" onclick="removeAllCookiesAndLocalStorage();">Remove all cookies</button>
+        <button class="btn btn-sm btn-primary" onclick="addCookieAndRefresh();">Add cookie and refresh window</button>
+        @*<button class="btn btn-sm btn-secondary" onclick="addCookie();">Only add cookie</button>*@
+        <button class="btn btn-sm btn-danger" onclick="removeAllCookiesAndLocalStorage();">Remove all cookies and refresh window</button>
     </div>
 
     <div class="mt-3"> 
